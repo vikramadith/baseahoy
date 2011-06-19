@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="296" height="50"
+		 click="group1_clickHandler(event)"
+		 creationComplete="this.updateActivityDisplay()"
+		 mouseOver="group1_mouseOverHandler(event)"
+		 mouseOut="group1_mouseOutHandler(event)">
+		
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.persistence.PersistenceManager;
+			
+			import flash.net.navigateToURL;
+						
+			
+			[Bindable]
+			private var _activity:Activity;
+			public function get activity():Activity
+			{
+				return this._activity;
+			}
+			public function set activity(value:Activity):void
+			{
+				this._activity = value;
+				
+				this.updateActivityDisplay();
+			}
+			
+			
+			[Embed(source = "assets/icons/envelope.png")]
+			private var envelopeImg:Class;
+			[Embed(source = "assets/icons/comment.png")]
+			private var commentImg:Class;
+			[Embed(source = "assets/icons/todo.png")]
+			private var todoImg:Class;
+			
+			private var isViewed:Boolean;
+			
+			[Bindable]
+			private var isByUser:Boolean = true;;
+			
+			private function updateActivityDisplay():void
+			{
+				this.isViewed = this._activity.viewed;
+				
+				if(!this._activity.viewed)
+				{
+					this.backgroundFill.color = 0xFFE97F;
+					this._activity.viewed = true;
+					
+					PersistenceManager.saveXML();
+				}
+				
+				if(this.lblDate && this._activity)
+					this.lblDate.text = this.dateFormatter.format(this._activity.date);
+				
+				if(this.img && this._activity)
+				{
+					switch(this._activity.activityType)
+					{
+						case ActivityType.MESSAGE:
+							this.img.source = this.envelopeImg;
+							break;
+						
+						case ActivityType.COMMENT:
+							this.img.source = this.commentImg;
+							break;
+						
+						case ActivityType.TODO_NEW:
+						case ActivityType.TODO_UPDATE:
+							this.img.source = this.todoImg;
+							this.isByUser = false;
+							
+							if(!this._activity.date)
+								this.lblDate.visible = false;
+							break;
+					}
+				}
+			}
+			
+			protected function group1_clickHandler(event:MouseEvent):void
+			{
+				navigateToURL(new URLRequest(this.activity.link));
+			}
+
+			protected function group1_mouseOverHandler(event:MouseEvent):void
+			{
+				if(!this.isViewed)
+					this.backgroundFill.color = 0xFFD51E;
+				else					
+					this.backgroundFill.color = 0xB9E3F7;					
+			}
+
+
+			protected function group1_mouseOutHandler(event:MouseEvent):void
+			{				
+				if(!this.isViewed)
+					this.backgroundFill.color = 0xFFE97F;
+				else					
+					this.backgroundFill.color = 0xE3F2F9;
+			}
+
+		]]>
+	</fx:Script>
+
+	
+	<fx:Declarations>
+		<mx:DateFormatter id="dateFormatter" formatString="MMM D, YYYY"/>
+	</fx:Declarations>
+	
+	
+	<s:Rect width="100%" height="100%">
+		<s:fill>
+			<s:SolidColor id="backgroundFill" color="#E3F2F9"/>
+		</s:fill>
+	</s:Rect>
+	
+	<s:VGroup width="273" height="100%"
+			  paddingLeft="5" paddingRight="5" paddingTop="5" paddingBottom="5" x="23">
+		<s:Label text="{this._activity.project}" fontWeight="bold" fontSize="10"/>
+		<s:Label text="{this._activity.description}" width="100%" height="12"/>
+		<s:HGroup width="100%">
+			<s:Label text="by" fontSize="10" visible="{this.isByUser}"/>
+			<s:Label text="{this._activity.user}" fontSize="10" visible="{this.isByUser}"/>
+			<mx:Spacer width="100%"/>
+			<s:Label id="lblDate" fontSize="10"/>
+		</s:HGroup>
+		
+	</s:VGroup>
+	<mx:Image id="img" x="3" y="15" width="22" height="16"/>
+	
+</s:Group>

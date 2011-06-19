@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:activity="com.baseahoy.activity.*"
+					   backgroundAlpha="0.0" width="340" height="320"
+					   alpha="0"
+					   preinitialize="windowedapplication1_preinitializeHandler(event)"
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)">
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.activity.Activity;
+			
+			import mx.events.FlexEvent;
+
+			protected function windowedapplication1_preinitializeHandler(event:FlexEvent):void
+			{				
+				this.showStatusBar = false;
+			}
+
+
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				
+				
+				var activity:Activity = new Activity();
+				activity.project = "Project";
+				activity.description = "Some blah message.";
+				activity.user = "Dude";
+				activity.date = new Date();
+				
+				this.activityItem.activity = activity;
+				this.activityItem0.activity = activity;
+				this.activityItem1.activity = activity;
+				this.activityItem2.activity = activity;
+				this.activityItem3.activity = activity;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:Fade id="fade" alphaFrom="0" alphaTo="1" duration="3000"/>
+	</fx:Declarations>
+	
+	<mx:Image x="0" y="0" source="assets/images/HeaderPic.png"/>
+	<s:Label x="80" y="31" text="Base Ahoy!" color="#0094FF" fontWeight="bold" fontSize="14"/>
+	<mx:Image x="276" y="30" source="assets/icons/settings.png" scaleContent="false" width="12" height="12"/>
+	<mx:Image x="290" y="30" source="assets/icons/minimize.png" scaleContent="false" width="12" height="12"/>
+	<s:VGroup x="6" y="46" width="100%" height="264" gap="3">
+		<activity:ActivityItem id="activityItem" x="10" y="10"/>
+		<activity:ActivityItem id="activityItem0"/>
+		<activity:ActivityItem id="activityItem1"/>
+		<activity:ActivityItem id="activityItem2"/>
+		<activity:ActivityItem id="activityItem3"/>
+	</s:VGroup>
+	
+</s:WindowedApplication>

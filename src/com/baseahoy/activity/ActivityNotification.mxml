@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="314" height="96"
+		  preinitialize="windowedapplication1_preinitializeHandler(event)"
+		  creationComplete="windowedapplication1_creationCompleteHandler(event)" xmlns:activity="com.baseahoy.activity.*" backgroundAlpha="0.0" contentBackgroundAlpha="0.0">
+	
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.activity.Activity;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.events.FlexEvent;
+			
+			[Bindable]
+			public var notificationText:String;
+			
+			private var _showTimer:Timer;
+			private var _delayTimer:Timer;
+			private var _hideTimer:Timer;
+			
+			protected function windowedapplication1_preinitializeHandler(event:FlexEvent):void
+			{
+				this.maximizable = false;
+				this.resizable = false;
+				this.minimizable = false;
+				this.showStatusBar = false;
+				this.alwaysInFront = true;
+				this.systemChrome = "none";
+				this.type = "lightweight";
+				this.transparent = true;
+			}
+			
+			
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.nativeWindow.x = Screen.mainScreen.bounds.width - 320;
+				this.nativeWindow.y = Screen.mainScreen.bounds.height;
+								
+				setTimeout(this.startTimer, 2000);
+			}
+			
+			private function startTimer():void
+			{
+				
+				_showTimer = new Timer(10,0);
+				_showTimer.addEventListener("timer", showTimerHandler);
+				_showTimer.start();
+			}
+			
+			private function showTimerHandler(event:TimerEvent):void {
+				this.nativeWindow.y -= 10;
+				
+				if(this.nativeWindow.y <= (Screen.mainScreen.bounds.height - (this.nativeWindow.height + 50))){
+					_showTimer.stop();
+					
+					_delayTimer = new Timer(1000, 5);
+					_delayTimer.addEventListener("timer", delayTimerHandler);
+					_delayTimer.start();
+				}
+			}
+			
+			private function delayTimerHandler(event:TimerEvent):void {
+				var t:Timer = Timer(event.target);
+				
+				if(t.currentCount == _delayTimer.repeatCount){
+					_hideTimer = new Timer(20,999);
+					_hideTimer.addEventListener("timer", hideTimerHandler);
+					_hideTimer.start();
+				}
+			}
+			
+			private function hideTimerHandler(event:TimerEvent):void {
+				if(!this.closed) {
+					this.y += 10;
+					
+					if(this.y >= (Screen.mainScreen.bounds.height - 50)){
+						this.close();
+						_hideTimer.stop();
+					}
+				} else {
+					_hideTimer.stop();
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<mx:Image x="0" y="0" source="assets/images/NotificationPic.png"/>
+	<s:Label x="80" y="31" text="Base Ahoy!" color="#0094FF" fontWeight="bold" fontSize="14"/>
+	<mx:Text x="11" y="50" width="282" height="100%" text="{this.notificationText}"/>
+	
+	
+</s:Window>

@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					   xmlns:s="library://ns.adobe.com/flex/spark" 
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   showStatusBar="false"
+					   creationComplete="windowedapplication1_creationCompleteHandler(event)" width="200" height="25">
+	
+	<fx:Style source="BaseAhoy.css"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.activity.Activity;
+			import com.baseahoy.activity.ActivityChecker;
+			import com.baseahoy.activity.ActivityItem;
+			import com.baseahoy.activity.ActivityList;
+			import com.baseahoy.activity.ActivityNotification;
+			import com.baseahoy.activity.ActivityType;
+			import com.baseahoy.activity.Notification;
+			import com.baseahoy.events.NewActivitiesEvent;
+			import com.baseahoy.events.OnLoadSettingChangeEvent;
+			import com.baseahoy.persistence.PersistenceManager;
+			import com.baseahoy.settings.Settings;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			import mx.messaging.channels.HTTPChannel;
+			import mx.rpc.events.ResultEvent;
+			import mx.utils.Base64Encoder;
+			
+			import spark.components.TitleWindow;
+			
+			[Embed(source="assets/icons/icon16.png")]
+			public var imgCls:Class;
+			
+			[Embed(source="assets/icons/iconNew16.png")]
+			public var imgNewCls:Class;
+			
+			private var activityChecker:ActivityChecker;
+			private var activityCheckerInitialized:Boolean = false;
+			private var al:ActivityList;
+			private var notificationWindow:ActivityNotification;
+			private var settings:Settings;
+						
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.nativeWindow.x = (Screen.mainScreen.bounds.width / 2) - (this.width / 2);
+				this.nativeWindow.y = (Screen.mainScreen.bounds.height / 2) - (this.height / 2);
+				
+				setTimeout(this.initApp, 1000);
+			}
+			
+			private function initApp():void
+			{				
+				stage.nativeWindow.visible = false;
+				
+				this.setTrayIcon(new imgCls());
+				
+				PersistenceManager.loadData();
+				
+				if(PersistenceManager.isSetup)
+					this.initChecker();
+				else
+					this.showSettings();				
+			}
+			
+			private function onLoadSettingChangeHandler(event:OnLoadSettingChangeEvent):void
+			{				
+				if(!flash.system.Capabilities.isDebugger)
+					NativeApplication.nativeApplication.startAtLogin = event.onLoad;
+			}
+			
+			private function initChecker():void
+			{
+				if(this.activityCheckerInitialized)
+					return;
+				
+				this.activityChecker = new ActivityChecker();
+				this.activityChecker.addEventListener(NewActivitiesEvent.NEW_ACTIVITIES, this.newActivitiesHandler);
+				this.activityChecker.addEventListener("checkCancelled", this.checkCancelledHandler);
+				this.activityChecker.beginCheck();
+				
+				this.activityCheckerInitialized = true;
+			}
+			
+			private function setTrayIcon(cls:Bitmap):void
+			{
+				var bmp:Bitmap = cls as Bitmap;								
+				this.nativeApplication.icon.bitmaps = [bmp];
+				
+				SystemTrayIcon(NativeApplication.nativeApplication.icon).addEventListener(MouseEvent.CLICK, this.showNotificationList);
+				
+				var menu:NativeMenu = new NativeMenu();
+				
+				var exitNativeMenuItem:NativeMenuItem = new NativeMenuItem("Exit Base Ahoy!");				
+				exitNativeMenuItem.addEventListener(Event.SELECT, this.exitApp);				
+				menu.addItem(exitNativeMenuItem);
+				
+				SystemTrayIcon(NativeApplication.nativeApplication.icon).menu = menu;
+			}
+			
+			private function showNotificationList(event:Event = null):void
+			{
+				this.setTrayIcon(new imgCls());
+				
+				this.al = new ActivityList();
+				al.addEventListener("showSettings", this.showSettingsHandler);
+				
+				al.maximizable = false;
+				al.resizable = false;
+				al.minimizable = false;
+				al.showStatusBar = false;
+				al.alwaysInFront = true;
+				al.systemChrome = "none";
+				al.type = "lightweight";
+				al.transparent = true;
+				
+				al.open();
+			}
+			
+			
+			private function exitApp(event:Event):void
+			{
+				if(this.al)
+					this.al.close();
+				
+				if(this.settings)
+					this.settings.close();
+				
+				stage.nativeWindow.close();
+			}
+			
+			private function newActivitiesHandler(event:NewActivitiesEvent):void
+			{
+				this.setTrayIcon(new imgNewCls());
+				
+				this.showNotification(event.activities);
+			}
+			
+			private function checkCancelledHandler(event:Event):void
+			{
+				this.activityCheckerInitialized = false;
+				this.initChecker();
+			}
+			
+			private function showNotification(activities:ArrayCollection):void
+			{				
+				if(this.al)
+					this.al.close();
+				
+				this.notificationWindow = new ActivityNotification();
+				
+				this.notificationWindow.addEventListener(MouseEvent.CLICK, this.notificationClicked);
+				
+				if(activities.length > 1)
+					this.notificationWindow.notificationText = "New activity on Base Camp.";
+				else
+				{				
+					var activityName:String;
+					
+					switch((activities[0] as Activity).activityType)
+					{
+						case ActivityType.MESSAGE:
+							activityName = "New message";
+							break;
+						
+						case ActivityType.COMMENT:
+							activityName = "New comment";
+							break;
+						
+						case ActivityType.TODO_NEW:
+							activityName = "New todo list";
+							break;
+						
+						case ActivityType.TODO_UPDATE:
+							activityName = "Updated todo list";
+							break;
+					}
+					
+					this.notificationWindow.notificationText = activityName + " in " + (activities[0] as Activity).project + ": " + (activities[0] as Activity).description;
+				}
+				
+				this.notificationWindow.maximizable = false;
+				this.notificationWindow.resizable = false;
+				this.notificationWindow.minimizable = false;
+				this.notificationWindow.showStatusBar = false;
+				this.notificationWindow.alwaysInFront = true;
+				this.notificationWindow.systemChrome = "none";
+				this.notificationWindow.type = "lightweight";
+				this.notificationWindow.transparent = true;
+				
+				this.notificationWindow.open();
+			}
+			
+			private function notificationClicked(event:Event):void
+			{
+				this.notificationWindow.close();
+				
+				this.showNotificationList();
+			}
+			
+			private function showSettingsHandler(event:Event):void
+			{	
+				this.showSettings();
+			}
+			
+			private function showSettings():void
+			{
+				this.settings = new Settings();
+				
+				this.settings.addEventListener(OnLoadSettingChangeEvent.ON_LOAD_SETTING_CHANGE, this.onLoadSettingChangeHandler);
+				
+				this.settings.addEventListener("settingsSaved", this.settingsSavedHandler);
+				this.settings.addEventListener("cancelClicked", this.exitApp);
+				
+				this.settings.maximizable = false;
+				this.settings.resizable = false;
+				this.settings.minimizable = false;
+				this.settings.showStatusBar = false;
+				this.settings.alwaysInFront = false;
+				this.settings.systemChrome = NativeWindowSystemChrome.NONE;
+				this.settings.type = NativeWindowType.NORMAL;
+				this.settings.transparent = true;
+				
+				this.settings.open();
+				
+			}
+			
+			private function settingsSavedHandler(event:Event):void
+			{
+				this.initChecker();
+			}
+		]]>
+	</fx:Script>
+	<s:Label x="29" y="5" text="Base Ahoy! loading..." fontSize="16" color="#0094FF" width="154" height="16"/>
+	
+</s:WindowedApplication>

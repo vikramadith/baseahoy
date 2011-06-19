@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fxpProperties abbreviated="false" authoringTool="Flex Builder" compiles="true" parentProject="fda43586-cfe7-440d-83e8-83af6251f4f0" projectUUID="fda43586-cfe7-440d-83e8-83af6251f4f0" sdkVersion="4.1.0" uuid="7b63435a-c7a4-454e-ac64-26c2a3b719bf" version="4">
+  <projects/>
+  <src/>
+  <swc>
+    <linked location="sdkPlaceHolder" path="sdkPlaceHolder" position="0" uuid="7b63435a-c7a4-454e-ac64-26c2a3b719bf"/>
+    <linked location="C:/Documents and Settings/raman.vikram/Adobe Flash Builder 4/BaseAhoy/libs" path="/libs" position="1" uuid="07e8a3fb-e4ca-4e57-8c9f-c36a8af2ada1"/>
+  </swc>
+  <misc/>
+  <theme/>
+</fxpProperties>

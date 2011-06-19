@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Label with the behaviour of a hyperlink -->
+<mx:Label xmlns:mx="http://www.adobe.com/2006/mxml"
+	styleName="linkLabel" useHandCursor="true" buttonMode="true" mouseChildren="false" fontWeight="bold">
+	
+	<mx:Style>
+		.linkLabel{
+			color:blue;
+			textDecoration:underline;
+		}
+		
+		.linkLabelDisabled{
+			color:gray;
+			textDecoration:none;
+		}
+		
+	</mx:Style>
+	
+	<mx:Script>
+		<![CDATA[
+			override public function set enabled(value:Boolean):void{
+				super.enabled = value;
+				
+				// Show hand cursor only when enabled.
+				if(value){
+					this.buttonMode = true;
+				} else{
+					this.buttonMode = false;
+				}
+			}
+			
+			override public function set data(value:Object):void{
+				super.data = value;
+				
+				this.styleName = "linkLabel";
+			}
+		]]>
+	</mx:Script>
+</mx:Label>

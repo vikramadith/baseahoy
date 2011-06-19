@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:BorderContainer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   borderColor="#0094FF"
+				   width="300" height="260">
+	
+	<fx:Metadata>
+		[Event(name = "addAccountFinish", type = "com.baseahoy.events.AddAccountFinishEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.events.AddAccountFinishEvent;
+			
+			import mx.managers.PopUpManager;
+			
+			protected function btnNext_clickHandler(event:MouseEvent):void
+			{
+				this.vs.selectedIndex = 1;
+			}
+			
+			protected function btnCancel2_clickHandler(event:MouseEvent):void
+			{
+				PopUpManager.removePopUp(this);
+			}			
+			
+			protected function btnFinish_clickHandler(event:MouseEvent):void
+			{
+				this.dispatchEvent(new AddAccountFinishEvent(AddAccountFinishEvent.ADD_ACCOUNT_FINISH, this.tiEndpoint.text, this.tiToken.text.replace(" ", "")));
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<mx:ViewStack id="vs" width="100%" height="100%"
+				  paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10">
+		
+		<s:NavigatorContent>
+			<s:VGroup width="100%" height="100%">
+				<s:HGroup width="100%">
+					<s:Label left="10" top="10" text="Add Account" fontSize="16" color="#0094FF" fontWeight="bold"/>
+					<mx:Spacer width="100%"/>
+					<s:Label right="10" top="10" text="Step 1/2" fontSize="16" color="#0094FF"/>		
+				</s:HGroup>
+				
+				<mx:Spacer height="5"/>
+				
+				<s:Label text="Please provide your account endpoint"/>
+				<s:Label left="10" y="40" text="1. Log in to Basecamp"/>
+				<s:Label left="10" y="60" text="2. Check the URL in your browser address bar."/>
+				<s:Label left="10" y="80" text="3. The text up to the &quot;.com&quot; is the account&#13;endpoint&#13;&#13;Example:&#13;https://mycompany.basecamphq.com" height="70" width="100%"/>
+				
+				<mx:Spacer height="5"/>
+				
+				<s:TextInput id="tiEndpoint" width="100%"/>
+				
+				<mx:Spacer height="100%"/>
+				
+				<s:HGroup width="100%" horizontalAlign="right">
+					<s:Button id="btnNext" label="Next"
+							  click="btnNext_clickHandler(event)"/>
+					<s:Button id="btnCancel1" label="Cancel"
+							  click="btnCancel2_clickHandler(event)"/>
+				</s:HGroup>		
+			</s:VGroup>
+		</s:NavigatorContent>
+		<s:NavigatorContent>
+			<s:VGroup width="100%" height="100%">
+				<s:HGroup width="100%">
+					<s:Label left="10" top="10" text="Add Account" fontSize="16" color="#0094FF" fontWeight="bold"/>
+					<mx:Spacer width="100%"/>
+					<s:Label right="10" top="10" text="Step 2/2" fontSize="16" color="#0094FF"/>		
+				</s:HGroup>
+				
+				<mx:Spacer height="5"/>
+				
+				<s:Label text="Please provide your account token"/>
+				<s:Label left="10" y="40" text="1. Log in to Basecamp"/>
+				<s:Label left="10" y="60" text="2. Click 'My info' on the top right"/>
+				<s:Label left="10" y="80" text="3. Click &quot;Show your tokens&quot;"/>
+				<s:Label left="10" y="100" text="4. Copy the token under &quot;Token for feed readers or the Basecamp API &quot;" height="31" width="260"/>
+				
+				<mx:Spacer height="5"/>
+				
+				<s:TextInput id="tiToken" width="100%"/>
+				
+				<mx:Spacer height="100%"/>
+				
+				<s:HGroup width="100%" horizontalAlign="right">
+					<s:Button id="btnFinish" label="Finish"
+							  click="btnFinish_clickHandler(event)"/>
+					<s:Button id="btnCancel2" label="Cancel"
+							  click="btnCancel2_clickHandler(event)"/>
+				</s:HGroup>		
+			</s:VGroup>
+		</s:NavigatorContent>
+		
+		
+	</mx:ViewStack>
+	
+</s:BorderContainer>

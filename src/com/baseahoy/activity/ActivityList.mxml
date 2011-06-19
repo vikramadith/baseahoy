@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="340" height="320"
+		  creationComplete="windowedapplication1_creationCompleteHandler(event)" xmlns:activity="com.baseahoy.activity.*" backgroundAlpha="0.0" contentBackgroundAlpha="0.0">
+	
+	<fx:Metadata>
+		[Event(name = "showSettings", type = "mx.events.Event")]
+	</fx:Metadata>
+	
+	<s:layout>
+		<s:BasicLayout/>
+	</s:layout>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.activity.Activity;
+			import com.baseahoy.persistence.PersistenceManager;
+			import com.baseahoy.settings.Settings;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.collections.ArrayCollection;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+						
+			protected function windowedapplication1_creationCompleteHandler(event:FlexEvent):void
+			{
+				this.nativeWindow.x = Screen.mainScreen.bounds.width - 320;
+				this.nativeWindow.y = Screen.mainScreen.bounds.height - 360;
+				
+				setTimeout(this.showActivities, 1000);
+			}
+			
+			private function showActivities():void
+			{				
+				var activities:ArrayCollection = PersistenceManager.getNewActivities();
+				
+				for(var activityIndex:int = 0; activityIndex < activities.length; activityIndex++)
+				{
+					var activityItem:ActivityItem = new ActivityItem();
+					activityItem.activity = activities[activityIndex] as Activity;
+					
+					if(activityIndex < ActivityChecker.newActivityCount)
+						activityItem.activity.viewed = false;
+					
+					this.vGroup.addElement(activityItem);
+				}
+				
+				ActivityChecker.newActivityCount = 0;
+				
+				this.lblTitle.text = "Base Ahoy!"
+			}
+			
+			
+			private function makeVisible():void
+			{
+				setTimeout(this.showActivities, 2000);
+			}
+
+			protected function image1_clickHandler(event:MouseEvent):void
+			{
+				trace("minimize");
+				this.close();
+			}
+
+
+			protected function image2_clickHandler(event:MouseEvent):void
+			{
+				trace("settings");
+				//PopUpManager.createPopUp(this as DisplayObject, Settings, true);
+				
+				this.dispatchEvent(new Event("showSettings"));
+			}
+
+
+			protected function image2_mouseOverHandler(event:MouseEvent):void
+			{
+				this.settingsImgHighlight.visible = true;
+			}
+
+
+			protected function image2_mouseOutHandler(event:MouseEvent):void
+			{
+				this.settingsImgHighlight.visible = false;
+			}
+
+
+			protected function image1_mouseOverHandler(event:MouseEvent):void
+			{
+				this.minImgHighlight.visible = true;
+			}
+
+
+			protected function image1_mouseOutHandler(event:MouseEvent):void
+			{
+				this.minImgHighlight.visible = false;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<mx:Image x="0" y="0" source="assets/images/HeaderPic.png"/>
+	<s:Label id="lblTitle" x="80" y="31" text="Loading…" color="#0094FF" fontWeight="bold" fontSize="14"/>
+	
+	<s:Rect id="settingsImgHighlight"
+			x="276" y="30" width="12" height="12" visible="false">
+		<s:fill>
+			<s:RadialGradient>
+				<s:entries>
+					<s:GradientEntry color="white"/>
+					<s:GradientEntry color="yellow"/>
+				</s:entries>
+			</s:RadialGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<mx:Image x="276" y="30" source="assets/icons/settings.png" scaleContent="false" width="12" height="12"
+			  click="image2_clickHandler(event)"
+			  mouseOver="image2_mouseOverHandler(event)"
+			  mouseOut="image2_mouseOutHandler(event)"/>
+	
+	
+	<s:Rect id="minImgHighlight"
+			x="290" y="30" width="12" height="12" visible="false">
+		<s:fill>
+			<s:RadialGradient>
+				<s:entries>
+					<s:GradientEntry color="white"/>
+					<s:GradientEntry color="yellow"/>
+				</s:entries>
+			</s:RadialGradient>
+		</s:fill>
+	</s:Rect>
+	
+	<mx:Image x="290" y="30" source="assets/icons/minimize.png" scaleContent="false" width="12" height="12"
+			  click="image1_clickHandler(event)"
+			  mouseOver="image1_mouseOverHandler(event)"
+			  mouseOut="image1_mouseOutHandler(event)"/>
+	<s:VGroup id="vGroup" x="6" y="46" width="100%" height="264" gap="3"/>
+	
+</s:Window>

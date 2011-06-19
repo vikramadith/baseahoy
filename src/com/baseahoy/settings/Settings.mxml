@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Window xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		  xmlns:s="library://ns.adobe.com/flex/spark" 
+		  xmlns:mx="library://ns.adobe.com/flex/mx"
+		  width="332" height="317"
+		  title="Base Ahoy!"
+		  defaultButton="{this.btnNext}"
+		  preinitialize="window1_preinitializeHandler(event)"
+		  creationComplete="bordercontainer1_creationCompleteHandler(event)" xmlns:ui="com.baseahoy.common.ui.*" >
+	
+	<fx:Metadata>		
+		[Event(name = "settingsSaved", type = "flash.events.Event")]
+		[Event(name = "cancelClicked", type = "flash.events.Event")]
+		[Event(name = "onLoadSettingChange", type = "com.baseahoy.events.OnLoadSettingChangeEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.baseahoy.events.AddAccountFinishEvent;
+			import com.baseahoy.events.OnLoadSettingChangeEvent;
+			import com.baseahoy.persistence.PersistenceManager;
+			
+			import mx.collections.ArrayCollection;
+			import mx.containers.TitleWindow;
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.managers.PopUpManager;
+			
+			import spark.components.TitleWindow;	
+			
+			private var endpoint:String;
+			private var token:String;
+						
+			protected function window1_preinitializeHandler(event:FlexEvent):void
+			{
+				this.maximizable = false;
+				this.resizable = false;
+				this.minimizable = false;
+				this.showStatusBar = false;
+				this.alwaysInFront = false;
+				this.systemChrome = "none";
+				this.type = "lightweight";
+				this.transparent = true;
+			}
+			
+			protected function bordercontainer1_creationCompleteHandler(event:FlexEvent):void
+			{
+				if(PersistenceManager.isSetup)
+				{
+					this.vs.selectedIndex = 1;
+					//this.tiToken.text = PersistenceManager.userToken;
+					this.stepperFreq.value = PersistenceManager.refreshTime / 60;
+					
+				}
+				else
+					this.vs.selectedIndex = 0;
+				
+				this.nativeWindow.x = (Screen.mainScreen.bounds.width / 2) - (this.width / 2);
+				this.nativeWindow.y = (Screen.mainScreen.bounds.height / 2) - (this.height / 2);				
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				if(this.vs.selectedIndex == 0)
+					this.dispatchEvent(new Event("cancelClicked"));
+				
+				this.close();
+			}
+			
+			protected function button2_clickHandler(event:MouseEvent):void
+			{
+				try
+				{
+					if(this.listAccounts.dataProvider)
+					{
+						PersistenceManager.endpoint = this.listAccounts.dataProvider[0].endpoint;
+						PersistenceManager.userToken = this.listAccounts.dataProvider[0].token;
+					}
+					
+					PersistenceManager.refreshTime = this.stepperFreq.value * 60;
+										
+					this.dispatchEvent(new OnLoadSettingChangeEvent(OnLoadSettingChangeEvent.ON_LOAD_SETTING_CHANGE, (this.radioGroupAutoStart.selection == this.rbYes))); 
+						
+					PersistenceManager.saveXML();
+					
+					this.dispatchEvent(new Event("settingsSaved"));
+					
+					this.close();			
+				}
+				catch(err:Error)
+				{
+					Alert.show(err.message + "\n" + err.getStackTrace());
+				}
+			}
+			
+			protected function btnNext_clickHandler(event:MouseEvent):void
+			{
+				this.vs.selectedIndex = 1;
+				this.defaultButton = this.btnOK;
+			}			
+
+			protected function linklabel1_clickHandler(event:MouseEvent):void
+			{				
+				var popup:AddAccount = PopUpManager.createPopUp(this, AddAccount, true) as AddAccount;
+				
+				popup.addEventListener(AddAccountFinishEvent.ADD_ACCOUNT_FINISH, this.addAccountFinishHandler);
+				
+				PopUpManager.centerPopUp(popup);
+			}
+			
+			private function addAccountFinishHandler(event:AddAccountFinishEvent):void
+			{
+				var accountObj:Object = new Object();
+				accountObj.label = "Default account";
+				accountObj.endpoint = event.endpoint;
+				accountObj.token = event.token;
+				
+				this.listAccounts.dataProvider = new ArrayCollection([accountObj]);
+			}
+
+
+			protected function linklabel2_clickHandler(event:MouseEvent):void
+			{
+				if(this.listAccounts.dataProvider)
+					this.listAccounts.dataProvider = null;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<s:RadioButtonGroup id="radioGroupFrequency"/>
+		<s:RadioButtonGroup id="radioGroupAutoStart"/>		
+	</fx:Declarations>
+	
+	<s:BorderContainer width="100%" height="100%" borderColor="#0094FF">
+		
+		<s:layout>
+			<s:VerticalLayout/>
+		</s:layout>
+		
+		<mx:ViewStack id="vs" width="100%" height="100%"
+					  paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"
+					  creationPolicy="all">
+			
+			<s:NavigatorContent width="100%" height="100%">
+				<s:VGroup width="100%" height="100%">
+					<s:Label x="10" y="10" text="Base Ahoy!" fontSize="16" color="#0094FF" fontWeight="bold"/>
+					
+					<s:VGroup width="100%" height="100%" verticalAlign="middle">						
+						
+						<s:Group x="10" y="98" width="315" height="63">
+							<s:Rect width="100%" height="100%">
+								<s:fill>
+									<s:SolidColor color="#E3F2F9"/>
+								</s:fill>
+							</s:Rect>
+							<s:Label x="10" y="18" text="Welcome! Please take a minute to to configure Base Ahoy for use." width="295"/>				
+						</s:Group>
+					</s:VGroup>
+					
+					<s:HGroup width="100%" horizontalAlign="right">	
+						<s:Button id="btnNext" x="174" y="249" label="Next"
+								  click="btnNext_clickHandler(event)"/>					
+						<s:Button x="252" y="249" label="Exit"
+								  click="button1_clickHandler(event)"/>
+					</s:HGroup>
+					
+				</s:VGroup>
+				
+			</s:NavigatorContent>
+			
+			<s:NavigatorContent>
+				<s:VGroup width="100%">
+					<s:Label x="10" y="10" text="Settings" fontSize="16" color="#0094FF" fontWeight="bold"/>
+					
+					<s:BorderContainer width="100%" borderAlpha="0" backgroundColor="#E3F2F9">
+						<s:layout>
+							<s:VerticalLayout paddingLeft="5" paddingBottom="5" paddingRight="5" paddingTop="5"/>
+						</s:layout>
+						
+						<s:Label x="5" y="5" text="Your accounts:"/>
+						
+						<s:HGroup width="100%">
+							<s:List id="listAccounts" width="100%" height="75"/>
+							<s:VGroup>
+								<ui:LinkLabel text="Add…"
+											  enabled="{(this.listAccounts.dataProvider == null || this.listAccounts.dataProvider.length == 0)}"
+											  click="linklabel1_clickHandler(event)"/>
+								<ui:LinkLabel text="Delete"
+											  click="linklabel2_clickHandler(event)"/>
+							</s:VGroup>
+						</s:HGroup>
+					</s:BorderContainer>
+										
+					<s:Group x="10" y="105" width="100%" height="63">
+						<s:Rect width="100%" height="100%">
+							<s:fill>
+								<s:SolidColor color="#E3F2F9"/>
+							</s:fill>
+						</s:Rect>
+						<s:Label x="5" y="5" text="Frequency to check for new activity:"/>	
+						<s:NumericStepper x="6" y="27" id="stepperFreq" minimum="1" maximum="30"/>
+						<s:Label x="67" y="34" text="minute(s)"/>
+						<!--<s:RadioButton id="rbFreq5" x="6" y="27" label="5 minutes" groupName="radiogroup2" selected="true"/>
+						<s:RadioButton id="rbFreq15" x="88" y="27" label="15 minutes" groupName="radiogroup2"/>
+						<s:RadioButton id="rbFreq30" x="177" y="27" label="30 minutes" groupName="radiogroup2"/>-->
+					</s:Group>
+					
+					<s:Group x="10" y="176" width="100%" height="63">
+						<s:Rect width="100%" height="100%">
+							<s:fill>
+								<s:SolidColor color="#E3F2F9"/>
+							</s:fill>
+						</s:Rect>
+						<s:Label x="5" y="5" text="Automatically start when operating system launches:"/>	
+						<s:RadioButton id="rbYes" x="5" y="27" label="Yes" groupName="radioGroupAutoStart" selected="true"/>
+						<s:RadioButton x="50" y="27" label="No" groupName="radioGroupAutoStart"/>
+					</s:Group>
+					
+					<s:HGroup width="100%" horizontalAlign="right">
+						<s:Button id="btnOK" x="174" y="249" label="OK"
+								  click="button2_clickHandler(event)"/>	
+						<s:Button x="252" y="249" label="Cancel"
+								  click="button1_clickHandler(event)"/>				
+					</s:HGroup>
+				</s:VGroup>
+				
+			</s:NavigatorContent>			
+			
+		</mx:ViewStack>
+		
+	</s:BorderContainer>
+	
+	
+	
+	
+</s:Window>
