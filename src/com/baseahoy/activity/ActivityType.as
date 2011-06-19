@@ -1,6 +1,6 @@
 package com.baseahoy.activity
 {
-	// ActivityType
+	// ActivityType.
 	public class ActivityType
 	{
 		public static const MESSAGE:int = 0;
