@@ -35,6 +35,7 @@ package com.baseahoy.activity
 		{
 			trace("beginCheck");
 			
+			//this.activityCheckTimer = new Timer(30 * 1000);
 			this.activityCheckTimer = new Timer(PersistenceManager.refreshTime * 1000);
 			this.activityCheckTimer.addEventListener(TimerEvent.TIMER, this.timerHandler);
 			this.activityCheckTimer.start();
@@ -55,6 +56,7 @@ package com.baseahoy.activity
 		private var existingTodoListIDIndex:int;
 		private var isCheckInProgress:Boolean = false;
 		private var cancellationCount:int = 0;
+		private var onlyUpdateDate:Boolean;
 		
 		private function timerHandler(event:Event):void
 		{
@@ -89,6 +91,7 @@ package com.baseahoy.activity
 					
 					this.dispatchEvent(new Event("checkCancelled"));
 				}
+				
 				return;
 			}
 			
@@ -333,6 +336,7 @@ package com.baseahoy.activity
 			
 			if(isExistingList)
 			{
+				this.onlyUpdateDate = false;
 				this.getTodoListItems(todoListID);
 			}
 			else
@@ -351,8 +355,10 @@ package com.baseahoy.activity
 				this.newActivities.addItem(newActivity);
 				
 				PersistenceManager.addTodoListID(todoListID);
+								
+				this.onlyUpdateDate = true;
 				
-				this.finishCheckTodoList();
+				this.getTodoListItems(todoListID);
 			}
 		}
 		
@@ -372,6 +378,8 @@ package com.baseahoy.activity
 				
 				var updatedDate:Date = DateUtil.parseIsoDate(itemNode['updated-at'].toString());
 				
+				var isToDoListUpdated:Boolean = false;
+				
 				if(updatedDate <= lastActivityTime)
 					continue;
 				else
@@ -388,10 +396,13 @@ package com.baseahoy.activity
 					newActivity.activityType = ActivityType.TODO_UPDATE;
 					newActivity.link = PersistenceManager.endpoint + "/projects/" + currentProject['id'] + "/todo_lists/" + todoListNode['id'];
 					
-					this.newActivities.addItem(newActivity);
-					this.updateLatestActivityTime(updatedDate);			
+					if(!isToDoListUpdated && !this.onlyUpdateDate)
+					{
+						this.newActivities.addItem(newActivity);
+						isToDoListUpdated = true;
+					}
 					
-					break;
+					this.updateLatestActivityTime(updatedDate);
 				}
 			}
 			
@@ -410,8 +421,51 @@ package com.baseahoy.activity
 		
 		private function finishCheckTodoLists():void
 		{			
+			this.checkFiles();
+		}
+		
+		private function checkFiles():void
+		{
+			var currentProject:XML = this.updatedProjects[this.updatedProjectIndex] as XML;
+			
+			this.api.sendRequest("projects/" + currentProject['id'].toString() + "/attachments.xml", this.checkFilesHandler);
+		}
+		
+		private function checkFilesHandler(result:XML):void
+		{
+			var currentProject:XML = this.updatedProjects[this.updatedProjectIndex] as XML;
+			
+			var files:XMLList = result.attachment;
+			
+			for(var fileIndex:int = 0; fileIndex < files.length(); fileIndex++)
+			{
+				var fileXML:XML = files[fileIndex];
+				
+				var createdDate:Date = DateUtil.parseIsoDate(fileXML['created-on'].toString());
+				
+				if(createdDate <= this.lastActivityTime)
+					continue;
+				
+				var newActivity:Activity = new Activity();
+				newActivity.activityID = new Date().time.toString();
+				newActivity.description = this.parseDescription(fileXML['description'].toString());
+				newActivity.project = currentProject['name'];
+				newActivity.user = null;
+				newActivity.date = createdDate;
+				newActivity.activityType = ActivityType.FILE;
+				newActivity.link = PersistenceManager.endpoint + "/projects/" + currentProject['id'] + "/files";
+				
+				this.newActivities.addItem(newActivity);
+				this.updateLatestActivityTime(createdDate);				
+			}
+			
+			this.finishCheckFiles();
+		}
+		
+		private function finishCheckFiles():void
+		{
 			this.gotoNextProject();
-		} 
+		}
 		
 		private function gotoNextProject():void
 		{
