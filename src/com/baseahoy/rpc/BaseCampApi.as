@@ -24,8 +24,7 @@ package com.baseahoy.rpc
 			httpService.addEventListener(FaultEvent.FAULT, this.httpServiceFaultHandler);
 			httpService.headers = getHeaders();
 			httpService.resultFormat = "e4x";
-			httpService.url = PersistenceManager.endpoint + "/" + resource;
-			
+			httpService.url = PersistenceManager.endpoint + "/" + resource;			
 			httpService.send();
 		}
 		
@@ -54,6 +53,8 @@ package com.baseahoy.rpc
 			var encoder:Base64Encoder = new Base64Encoder();
 			encoder.insertNewLines = false;
 			encoder.encode(PersistenceManager.userToken + ":oompaloompa");
+			
+			trace("Header: " +PersistenceManager.userToken + ":oompaloompa");
 			
 			headers.Authorization = "Basic " + encoder.toString(); 
 			

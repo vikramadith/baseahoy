@@ -33,9 +33,9 @@ package com.baseahoy.activity
 		
 		public function beginCheck():void
 		{
-			trace("beginCheck");
+			//trace("beginCheck");
 			
-			//this.activityCheckTimer = new Timer(30 * 1000);
+			//this.activityCheckTimer = new Timer(20 * 1000);
 			this.activityCheckTimer = new Timer(PersistenceManager.refreshTime * 1000);
 			this.activityCheckTimer.addEventListener(TimerEvent.TIMER, this.timerHandler);
 			this.activityCheckTimer.start();
@@ -60,12 +60,12 @@ package com.baseahoy.activity
 		
 		private function timerHandler(event:Event):void
 		{
-			trace(this.isCheckInProgress + ", " + cancellationCount);
+			//trace(this.isCheckInProgress + ", " + cancellationCount);
 			/*if(this.isCheckInProgress)
 			{
 			if(this.cancellationCount++ > 5)
 			{
-			trace("Cancelled");
+			//trace("Cancelled");
 			this.activityCheckTimer.stop();
 			this.activityCheckTimer.removeEventListener(TimerEvent.TIMER, this.timerHandler);
 			this.dispatchEvent(new Event("checkCancelled"));
@@ -73,7 +73,7 @@ package com.baseahoy.activity
 			}
 			else
 			{					
-			trace("End Cancelled");
+			//trace("End Cancelled");
 			/*this.isCheckInProgress = false;
 			this.cancellationCount = 0;*/
 			/*}				
@@ -81,11 +81,11 @@ package com.baseahoy.activity
 			
 			if(this.isCheckInProgress)
 			{
-				trace("Cancelled");
+				//trace("Cancelled");
 				
 				if(this.cancellationCount++ > 5)
 				{
-					trace("restart");
+					//trace("restart");
 					this.activityCheckTimer.stop();
 					this.activityCheckTimer.removeEventListener(TimerEvent.TIMER, this.timerHandler);
 					
@@ -96,7 +96,7 @@ package com.baseahoy.activity
 			}
 			
 			
-			trace("Check");
+			//trace("Check");
 			
 			this.isCheckInProgress = true;
 			
@@ -117,7 +117,7 @@ package com.baseahoy.activity
 		
 		private function faultHandler(event:FaultEvent):void
 		{
-			trace("cancelled");
+			//trace("cancelled");
 			
 			this.activityCheckTimer.stop();
 			this.activityCheckTimer.removeEventListener(TimerEvent.TIMER, this.timerHandler);
@@ -127,7 +127,7 @@ package com.baseahoy.activity
 		
 		private function getProjects():void
 		{
-			trace("getProjects");
+			//trace("getProjects");
 			this.api.sendRequest("projects.xml", this.getProjectsResultHandler);
 		}
 		
@@ -371,7 +371,7 @@ package com.baseahoy.activity
 		{
 			var todoItems:XMLList = result['todo-item'];
 			
-			trace("Items coiunt: " + todoItems.length());
+			//trace("Items coiunt: " + todoItems.length());
 			for(var itemIndex:int = 0; itemIndex < todoItems.length(); itemIndex++)
 			{
 				var itemNode:XML = todoItems[itemIndex];

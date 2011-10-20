@@ -37,8 +37,10 @@ package com.baseahoy.persistence
 		}		
 		public static function set userToken(value:String):void
 		{
+			trace("XML: " + dataXML.toString());
 			delete dataXML.userToken;
 			dataXML.userToken = value;
+			trace("XML: " + dataXML.toString());
 		}
 		
 		public static function get refreshTime():int
